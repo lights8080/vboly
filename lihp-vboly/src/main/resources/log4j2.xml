@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="off">
+	<Properties>
+		<Property name="LOGS_PATH">logs</Property>
+	</Properties>
+	<appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout charset="GBK" pattern="%d{yyyy-MM-dd HH:mm:ss} - %m%n" />
+		</Console>
+		<File name="consoleFile" fileName="${LOGS_PATH}/console.log"
+			append="true">
+			<ThresholdFilter level="TRACE" onMatch="ACCEPT"
+				onMismatch="DENY" />
+			<PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss} - %m%n" />
+		</File>
+		<File name="allFile" fileName="${LOGS_PATH}/all.log" append="true">
+			<ThresholdFilter level="TRACE" onMatch="ACCEPT"
+				onMismatch="DENY" />
+			<PatternLayout charset="UTF-8"
+				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %thread - %m%n%ex" />
+		</File>
+	</appenders>
+	<loggers>
+		<root level="debug">
+			<AppenderRef ref="allFile" />
+		</root>
+		<logger name="LOG_CONSOLE" level="debug" additivity="false">
+			<appenderRef ref="Console" />
+			<appenderRef ref="consoleFile" />
+		</logger>
+
+	</loggers>
+</configuration>
+
