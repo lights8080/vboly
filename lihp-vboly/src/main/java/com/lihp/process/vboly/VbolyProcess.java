@@ -118,8 +118,12 @@ public class VbolyProcess extends BaseProcess {
 			String hidstamp = page.getElementById("hidstamp").getAttribute("value");
 			logger.info("postbuy参数. sign:{},hidstamp:{}",sign,hidstamp);
 			//封装下单需要的参数
-			VbolyUtil.getInstance().setValue("hidstamp"+vBolyPo.getItemId(), hidstamp);
-			VbolyUtil.getInstance().setValue("sign"+vBolyPo.getItemId(), sign);
+			if(hidstamp!=null && !"".equals(hidstamp)){
+				VbolyUtil.getInstance().setValue("hidstamp"+vBolyPo.getItemId(), hidstamp);
+			}
+			if(sign!=null && !"".equals(sign)){
+				VbolyUtil.getInstance().setValue("sign"+vBolyPo.getItemId(), sign);
+			}
 			
 			boolean isWait = true;
 			while(isWait){
@@ -133,7 +137,7 @@ public class VbolyProcess extends BaseProcess {
 				}
 			}
 			
-			logger.debug("title:{},context:{}", page.getTitleText(),replaceWithBlank(context));
+			logger.debug("title:{},hidstamp:{},sign:{},context:{}", page.getTitleText(),hidstamp,sign,replaceWithBlank(context));
 			String desc = "";
 			Integer second = 0;
 			if (context.indexOf(VbolyConstant.TEXT_HOPE) != -1) {// 还有机会
@@ -235,15 +239,17 @@ public class VbolyProcess extends BaseProcess {
 			List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
 			requestParameters
 			.add(new NameValuePair("gid", vBolyPo.getItemId()));
+			String hidstamp = VbolyUtil.getInstance().getValue("hidstamp"+vBolyPo.getItemId());
+			String sign = VbolyUtil.getInstance().getValue("sign"+vBolyPo.getItemId());
 			requestParameters
-			.add(new NameValuePair("stamp", VbolyUtil.getInstance().getValue("hidstamp"+vBolyPo.getItemId())));
+			.add(new NameValuePair("stamp", hidstamp));
 			requestParameters
-					.add(new NameValuePair("sign", VbolyUtil.getInstance().getValue("sign"+vBolyPo.getItemId())));
+					.add(new NameValuePair("sign", sign));
 			request.setRequestParameters(requestParameters);
 
 			Page page = webClient.getPage(request);
 			String context = page.getWebResponse().getContentAsString();
-			logger.info("gid:{},context:{}",vBolyPo.getItemId(),context);
+			logger.info("gid:{},hidstamp:{},sign:{},context:{}",vBolyPo.getItemId(),hidstamp,sign,context);
 			// logger.debug("context:{}", context);
 			String[] parseXml = this.xmlParse(context);
 			status = parseXml[0];
