@@ -110,20 +110,7 @@ public class VbolyProcess extends BaseProcess {
 			HtmlPage page = webClient.getPage(request);
 
 			String context = page.getWebResponse().getContentAsString();
-			String sign = "";
-			DomElement domLinkBuy = page.getElementById("link_buy");
-			if(domLinkBuy!=null){
-				sign = searchValue(domLinkBuy.getAttribute("onclick"), "'", "'");
-			}
-			String hidstamp = page.getElementById("hidstamp").getAttribute("value");
-			logger.info("postbuy参数. sign:{},hidstamp:{}",sign,hidstamp);
-			//封装下单需要的参数
-			if(hidstamp!=null && !"".equals(hidstamp)){
-				VbolyUtil.getInstance().setValue("hidstamp"+vBolyPo.getItemId(), hidstamp);
-			}
-			if(sign!=null && !"".equals(sign)){
-				VbolyUtil.getInstance().setValue("sign"+vBolyPo.getItemId(), sign);
-			}
+//			logger.info("context：{}",context);
 			
 			boolean isWait = true;
 			while(isWait){
@@ -137,7 +124,7 @@ public class VbolyProcess extends BaseProcess {
 				}
 			}
 			
-			logger.debug("title:{},hidstamp:{},sign:{},context:{}", page.getTitleText(),hidstamp,sign,replaceWithBlank(context));
+			logger.debug("title:{},context:{}", page.getTitleText(),replaceWithBlank(context));
 			String desc = "";
 			Integer second = 0;
 			if (context.indexOf(VbolyConstant.TEXT_HOPE) != -1) {// 还有机会
@@ -146,6 +133,24 @@ public class VbolyProcess extends BaseProcess {
 			} else if (context.indexOf(VbolyConstant.TEXT_BUYING) != -1) {// 我要抢购
 				s = VbolyConstant.COMMON_STATE_BUYING;
 				desc = VbolyConstant.TEXT_BUYING;
+				String sign = "";
+				String hidstamp = "";
+				DomElement domLinkBuy = page.getElementById("link_buy");
+				if(domLinkBuy!=null){
+					sign = searchValue(domLinkBuy.getAttribute("onclick"), "'", "'");
+				}
+				DomElement docHidstamp = page.getElementById("hidstamp");
+				if(docHidstamp!=null){
+					hidstamp = docHidstamp.getAttribute("value");
+				}
+				logger.info("postbuy参数. sign:{},hidstamp:{}",sign,hidstamp);
+				//封装下单需要的参数
+				if(sign!=null && !"".equals(sign)){
+					VbolyUtil.getInstance().setValue("sign"+vBolyPo.getItemId(), sign);
+				}
+				if(hidstamp!=null && !"".equals(hidstamp)){
+					VbolyUtil.getInstance().setValue("hidstamp"+vBolyPo.getItemId(), hidstamp);
+				}
 			} else if (context.indexOf(VbolyConstant.TEXT_NOBUY) != -1 || context.indexOf(VbolyConstant.TEXT_NOBUY_1) != -1) {// 待上线|即将上线
 				DomElement lasttime = page.getElementById("lasttime");
 				//如果没有剩余时间，默认1分钟重新扫描
@@ -226,7 +231,14 @@ public class VbolyProcess extends BaseProcess {
 
 	@Override
 	public boolean buy() {
-		logger.debug("{} 抢购-开始", vBolyPo.getItemId());
+		String hidstamp = VbolyUtil.getInstance().getValue("hidstamp"+vBolyPo.getItemId());
+		String sign = VbolyUtil.getInstance().getValue("sign"+vBolyPo.getItemId());
+		
+		logger.debug("{} 抢购-开始 hidstamp:{},sign:{}", vBolyPo.getItemId(),hidstamp,sign);
+		if(StringUtils.isBlank(hidstamp) || StringUtils.isBlank(sign)){
+			this.skipRebuy();
+			return false;
+		}
 		StringBuffer strBuf = new StringBuffer();
 		strBuf.append("http://detail.vboly.com/join/postbuy");
 		String status = "";
@@ -239,17 +251,17 @@ public class VbolyProcess extends BaseProcess {
 			List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
 			requestParameters
 			.add(new NameValuePair("gid", vBolyPo.getItemId()));
-			String hidstamp = VbolyUtil.getInstance().getValue("hidstamp"+vBolyPo.getItemId());
-			String sign = VbolyUtil.getInstance().getValue("sign"+vBolyPo.getItemId());
+			
+			
 			requestParameters
 			.add(new NameValuePair("stamp", hidstamp));
 			requestParameters
 					.add(new NameValuePair("sign", sign));
 			request.setRequestParameters(requestParameters);
-
+			
 			Page page = webClient.getPage(request);
 			String context = page.getWebResponse().getContentAsString();
-			logger.info("gid:{},hidstamp:{},sign:{},context:{}",vBolyPo.getItemId(),hidstamp,sign,context);
+			logger.info("gid:{},stamp:{},sign:{}. context:{}",vBolyPo.getItemId(),hidstamp,sign,context);
 			// logger.debug("context:{}", context);
 			String[] parseXml = this.xmlParse(context);
 			status = parseXml[0];

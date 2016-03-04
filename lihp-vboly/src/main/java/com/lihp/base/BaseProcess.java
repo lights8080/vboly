@@ -46,7 +46,6 @@ public abstract class BaseProcess implements Runnable,IBaseProcess {
 		new Thread(new ReloadTimes(this)).start();
 	}
 
-
 	public void executeAll() {
 		if (!webClientManager.isLogin()) {
 			webClientManager.setLogin(login());
@@ -54,13 +53,17 @@ public abstract class BaseProcess implements Runnable,IBaseProcess {
 		new Thread(new ReloadTimes(this)).start();
 	}
 	
+	public void skipRebuy(){
+		buyCount=4;
+	}
+	
 	@Override
 	public void run() {
 		boolean buy = this.buy();
 		if (!buy) {
 			try {
-				//如果buyCount>8次 重新刷新
-				if(buyCount>8){
+				//如果buyCount>3次 重新刷新
+				if(buyCount>3){
 					buyCount=0;
 					new Thread(new ReloadTimes(this)).start();
 				}else{

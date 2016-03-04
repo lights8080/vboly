@@ -36,11 +36,12 @@ public class ReloadTimes implements Runnable {
 			} else if (second == VbolyConstant.COMMON_STATE_BUYING) {// 我要抢购
 				new Thread(process).start();
 			} else if (second <= VbolyConstant.BUY_MIN_SECOND_DEF) {// 抢购倒计时（秒）
-				new Thread(process).start();
-			} else if (second >= 600) {// 待上线 剩余时间
+				//new Thread(process).start();
+				new Thread(this).start();
+			} else if (second >= 600) {// 剩余时间大于10分钟  待上线 剩余时间
 				Thread.sleep(600000 - VbolyConstant.BUY_BUFFER_SECOND_DEF * 1000);
 				new Thread(this).start();
-			} else if (second >= 300) {
+			} else if (second >= 300) {// 剩余时间大于5分钟
 				Thread.sleep(300000 - VbolyConstant.BUY_BUFFER_SECOND_DEF * 1000);
 				new Thread(this).start();
 			} else if (second >= (VbolyConstant.BUY_MIN_SECOND_DEF
